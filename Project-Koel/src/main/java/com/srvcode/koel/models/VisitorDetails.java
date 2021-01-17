@@ -3,7 +3,7 @@ package com.srvcode.koel.models;
 import lombok.Data;
 
 @Data
-public class VistorDetails {
+public class VisitorDetails {
 
 	private String insertionOrderId;
 	private String fullName;

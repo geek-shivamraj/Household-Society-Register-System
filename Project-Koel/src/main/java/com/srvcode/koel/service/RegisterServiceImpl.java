@@ -1,6 +1,7 @@
 package com.srvcode.koel.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.srvcode.koel.models.AddVisitorRequest;
 import com.srvcode.koel.models.ClientResponseDTO;
 import com.srvcode.koel.models.SearchRequest;
+import com.srvcode.koel.models.VisitorDetails;
 import com.srvcode.koel.models.VisitorResponse;
 import com.srvcode.koel.persistance.RegisterDAO;
 
@@ -39,10 +41,11 @@ public class RegisterServiceImpl implements RegisterService {
 		if(Objects.isNull(visitor)) {
 			log.info("First time Visitor. Adding Visitor to master.");
 			registerDAO.addToVisitorMaster(request, dateTimeIn);
+			visitor = registerDAO.getVisitorDetail(request.getGovernmentId());
 		} else {
-			log.info("Not first time Visitor. Adding Visitor to visitor details");
-			registerDAO.addVisitorDetail(request, dateTimeIn);
+			log.info("Existing Visitor. Adding Visitor to visitor details");
 		}
+		registerDAO.addVisitorDetail(request, dateTimeIn, visitor.getInsertionOrderId());
 		visitorResponse.setFullName(request.getFullName());
 		visitorResponse.setDateTimeIn(dateTimeIn);
 		visitorResponse.setVisitorStatus(ENTER);
@@ -51,25 +54,48 @@ public class RegisterServiceImpl implements RegisterService {
 	
 	@Override
 	public ClientResponseDTO<VisitorResponse> updateVisitorStatus(String governmentId, String status, String userId) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		ClientResponseDTO<VisitorResponse> response = null;
+		VisitorResponse visitor = registerDAO.getVisitorDetail(governmentId);
+		VisitorDetails visitorDetails = null;
+		String dateTimeOut = null;
+		if(Objects.isNull(visitor)) {
+			response = new ClientResponseDTO<>(null, false, HttpStatus.NOT_FOUND.value(), "No visitor found in Master.");
+		} else {
+			visitorDetails = registerDAO.getVisitorLatestRecord(visitor.getInsertionOrderId());
+			if(ENTER.equalsIgnoreCase(visitorDetails.getVisitorStatus())) {
+				dateTimeOut = LocalDateTime.now().toString();
+				registerDAO.updateVisitorStatus(visitorDetails.getInsertionOrderId(), dateTimeOut);
+			}
+			VisitorResponse visitorResponse = new VisitorResponse();
+			visitorResponse.setDateTimeIn(visitorResponse.getDateTimeIn());
+			visitorResponse.setDateTimeOut(dateTimeOut);
+			visitorResponse.setVisitorStatus(EXIT);
+			visitorResponse.setFullName(visitor.getFullName());
+			response = new ClientResponseDTO<>(visitorResponse, true, HttpStatus.OK.value(), "Visitor exit status updated successfully.");
+		}
+		return response;
 	}
 
 	@Override
 	public ClientResponseDTO<List<VisitorResponse>> searchVisitor(SearchRequest request) {
 
 		ClientResponseDTO<List<VisitorResponse>> response = null;
+		List<VisitorResponse> visitorList = new ArrayList<>();
 		if(!Objects.isNull(request.getGovernmentId())) {
 			log.info("Searching visitor by Id.");
-			List<VisitorResponse> visitorList = registerDAO.searchVistorById(request.getGovernmentId());
+			VisitorResponse visitor = registerDAO.getVisitorDetail(request.getGovernmentId());
+			if(!Objects.isNull(visitor)) {
+				visitorList = registerDAO.searchVistorById(visitor.getInsertionOrderId());
+			}
 			response = new ClientResponseDTO<>(visitorList, true, HttpStatus.OK.value());
 		} else if(!Objects.isNull(request.getDate())) {
 			log.info("Searching visitor by Date.");
-			List<VisitorResponse> visitorList = registerDAO.searchVistorByDate(request.getDate());
+			visitorList = registerDAO.searchVistorByDate(request.getDate());
 			response = new ClientResponseDTO<>(visitorList, true, HttpStatus.OK.value());
 		} else {
 			log.error("Empty Search Criteria.");
-			response = new ClientResponseDTO<>(null, false, HttpStatus.BAD_REQUEST.value(), "Search criteria is empty.");
+			response = new ClientResponseDTO<>(visitorList, false, HttpStatus.BAD_REQUEST.value(), "Search criteria is empty.");
 		}
 		return response;
 	}

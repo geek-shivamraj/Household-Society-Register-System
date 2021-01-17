@@ -3,6 +3,7 @@ package com.srvcode.koel.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -16,17 +17,19 @@ import com.srvcode.koel.models.SearchRequest;
 import com.srvcode.koel.models.VisitorResponse;
 import com.srvcode.koel.service.RegisterService;
 
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/register")
 @Slf4j
+@ApiOperation(value="Register System Controller", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 public class RegisterSystemController {
 	
 	@Autowired
 	private RegisterService registerService;
 
 	@CrossOrigin
+	@ApiOperation(value="End point to add Visitor new record.")
 	@PostMapping("/addVisitor")
 	public ResponseEntity<ClientResponseDTO<VisitorResponse>> addVisitor(AddVisitorRequest request) {
 		
@@ -36,6 +39,7 @@ public class RegisterSystemController {
 	}
 	
 	@CrossOrigin
+	@ApiOperation(value="End point to update Visitor status based on his/her governmentId.")
 	@PatchMapping("/updateVisitorStatus")
 	public ResponseEntity<ClientResponseDTO<VisitorResponse>> updateVisitorStatus(String governmentId, String status, String userId) {
 		
@@ -45,6 +49,7 @@ public class RegisterSystemController {
 	}
 	
 	@CrossOrigin
+	@ApiOperation(value="End point to search Visitor based on a particular date or government Id.")
 	@PostMapping("/searchVisitor")
 	public ResponseEntity<ClientResponseDTO<List<VisitorResponse>>> searchVisitor(SearchRequest request) {
 		

@@ -17,6 +17,9 @@
 
 	<properties>
 		<java.version>1.8</java.version>
+		<swaggger-annotations.version>1.5.22</swaggger-annotations.version>
+        <swagger-ui.version>2.9.2</swagger-ui.version>
+        <swagger2.version>2.9.2</swagger2.version>
 	</properties>
 
 	<dependencies>
@@ -46,6 +49,37 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/net.sf.ucanaccess/ucanaccess -->
+		<dependency>
+		    <groupId>net.sf.ucanaccess</groupId>
+		    <artifactId>ucanaccess</artifactId>
+		    <version>4.0.4</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
+		
+		<dependency>
+           <groupId>io.swagger</groupId>
+           <artifactId>swagger-annotations</artifactId>
+           <version>${swaggger-annotations.version}</version>
+       </dependency>
+       
+       <dependency>
+           <groupId>io.springfox</groupId>
+           <artifactId>springfox-swagger2</artifactId>
+           <version>${swagger2.version}</version>
+       </dependency>
+       
+       <dependency>
+           <groupId>io.springfox</groupId>
+           <artifactId>springfox-swagger-ui</artifactId>
+           <version>${swagger-ui.version}</version>
+       </dependency>
+	
 	</dependencies>
 
 	<build>
